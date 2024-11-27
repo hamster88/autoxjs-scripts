@@ -107,16 +107,17 @@ function doLike(likeBtn, n_retry) {
   //console.log(n,m,likeBtn,n_retry);
 }
 
-function doScrolling() {
+function doScrolling(t) {
+  t = t || 50
   //var ui = className("androidx.viewpager.widget.ViewPager")
   //.depth("19")
   //.findOne()
 
   //ui.scrollLeft()
 
-  swipe(500, 1800, 500, 500, 50);
+  swipe(500, 1800, 500, 500, t);
   sleep(50);
-  swipe(500, 1800, 500, 1775, 50);
+  swipe(500, 1800, 500, 1775, t);
 }
 
 function checkEnd() {
@@ -129,7 +130,7 @@ function checkEnd() {
 
   emptyList = idEndsWith("mCommonPageStatusViewTvEmpty").findOnce();
   if (emptyList != null) {
-    state.bye = "看不到你的帖子呢"; //emptyList.text()
+    state.bye = "看不到你的帖子喵"; //emptyList.text()
     return true;
   }
 
@@ -192,7 +193,7 @@ function afterEndLike(posts) {
   };
 
   let msg = util.format(
-    "%s，检索到%d条帖子，点赞了%d次，耗时%d秒，总获赞%d，时间 %s",
+    "%s，检索到%d条帖子，点赞了%d次，用时%d秒，帖子总获赞%d，完成时间 %s",
     attr.bye,
     posts.length,
     attr.plus - attr.rep,
@@ -234,9 +235,9 @@ function main() {
       for (;;) {
         let msg = browserCommentMain();
         console.log("评论阅读结束", msg);
-        idEndsWith("commentSortHotTv").findOne().click()
-        state.user = '(正在等待新评论)'
-        sleep(10000)
+        idEndsWith("commentSortHotTv").findOne().click();
+        state.user = "(正在等待新评论)";
+        sleep(10000);
       }
       return;
     }
@@ -246,77 +247,95 @@ function main() {
   }
 }
 
-function reply(ui, text){
-  let btnId = idEndsWith("mCommentViewCommentLl")
-  let editId = idEndsWith("replyEditText")
-  let postId = idEndsWith("mSimpleReplyPageTvPost")
+function reply(ui, text) {
+  let btnId = idEndsWith("mCommentViewCommentLl");
+  let editId = idEndsWith("replyEditText");
+  let postId = idEndsWith("mSimpleReplyPageTvPost");
 
-  let btn = null
-  while(!btn){
-    btn = ui.findOne(btnId)
+  let btn = null;
+  while (!btn) {
+    btn = ui.findOne(btnId);
   }
-  btn.click()
+  btn.click();
 
-  editId.findOne().setText(text)
-  postId.findOne().click()
+  editId.findOne().setText(text);
+  postId.findOne().click();
 }
 
 // 浏览主贴评论主函数
 function browserCommentMain() {
   idEndsWith("commentSortOldestTv").findOne().click();
-  sleep(2000)
-  for (var li = 10; li > 0; ) {
+  sleep(2000);
+  let msg = "";
+  let currentKey = ""
+  for (var li = 10; li > 0; ) { 
+    // 此层循环负责滚动评论区
+
+    
     let commentFrames = depth("13")
       .className("android.widget.FrameLayout")
       .untilFind();
+
     state.user = "(正在读取评论)";
     state.item_count = commentFrames.length;
     var someKeys = "\n";
-    for (let frame of commentFrames) {
+
+    for(let frame of commentFrames){
       let tvs = frame.find(className("android.widget.TextView"));
       let texts = [];
       for (var tv of tvs) {
         texts.push(tv.text());
       }
 
-      let key = postHash(texts);
-      if (!key.trim()) {
+      let k1 = texts.slice(0, 3);
+      let k2 = texts.slice(-2);
+      let key = k1.concat(k2).join("\t");
+      if (!key.trim() || key.indexOf('回复')==-1) {
         // 排除不是预期的控件
         continue;
       }
 
-      console.log(JSON.stringify(key));
-      if (!key.match(/\t祈羽夜鸢/)) {
 
-        reply(frame,'要开始了喵～')
+      if (currentKey == "") {
+        msg = "正在探路中喵"
+        if (!(texts.join("\t").match(/\t祈羽夜鸢/))) {
+          currentKey = key;
+          console.log('key', key);
+          reply(frame, "要开始了喵～");
 
-        let entryBtn = null
-        while(!entryBtn){
-          entryBtn = frame.findOne(idEndsWith("mCommentViewNameTv"))
+          let entryBtn = null;
+          while (!entryBtn) {
+            entryBtn = frame.findOne(idEndsWith("mCommentViewNameTv"));
+          }
+          // currentEntry = entryBtn.text();
+
+          entryBtn.click();
+          sleep(2000);
+
+          msg = likeMain()
+          //let msg = "还在探路中喵";
+          idEndsWith("backButton").findOne().click();
+          state.user = "(已完成点赞，回去报告结果)"
+          sleep(5000);
+
+          someKeys += truncateString(key, 20) + "\n";
+          break; // 返回后原来的控制引用已失效，退出以重新建立引用
+        } else {
+          someKeys += "*" + truncateString(key, 20) + "\n";
         }
-        entryBtn.click()
-        sleep(2000)
-
-        //let msg = likeMain()
-        let msg = '正在探路喵'
-        idEndsWith("backButton").findOne().click()
-        sleep(2000)
-        
-        reply(frame, msg)
-        sleep(2000)
-        
-        //posts.push(texts);
-        //doneKeys.add(key);
-       
-        someKeys += truncateString(key, 20) + "\n";
-      } else {
-        someKeys += "*" + truncateString(key, 20) + "\n";
+      } else if (currentKey == key) {
+        // 点完赞后返回的主贴界面
+        reply(frame, msg);
+        sleep(10000);
+        currentKey = ""
       }
     }
     state.item_keys = someKeys;
     UpdateDynamicText();
-    doScrolling();
-
+    if(!currentKey){
+      doScrolling();
+    }
+    
     if (idEndsWith("endImage").findOnce()) {
       li--;
     }
