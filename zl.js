@@ -1,3 +1,4 @@
-p = {x:1,y:2}
-s = JSON.stringify(p, null, 2)
-console.info(s)
+s = '楼主\t点赞结束喽，检索到169条帖子，点赞了169次，耗时71秒'
+
+m = s.match(/楼主\t.*?时\d+秒/)
+console.log(m, !m)
