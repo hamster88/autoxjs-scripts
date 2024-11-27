@@ -24,7 +24,9 @@ const state = {
 
 _init_state = Object.assign({}, state);
 function resetState() {
-  state = Object.assign({}, _init_state);
+  for(let k in _init_state){
+    state[k] = _init_state[k]
+  }
   state.start_time = new Date();
   state.retrys = Array(15).fill(-1);
 }
@@ -166,6 +168,7 @@ function checkEnd() {
       state.bye = "网络似乎不太稳定喵\t";
     } else if (lt5 >= state.rep) {
       state.bye = "似乎大部分都赞过了喵\t";
+      return false; // 临时关闭
     } else {
       state.bye = "在点赞的路上遇到深渊侵蚀喵喵喵\t";
     }
@@ -261,7 +264,7 @@ function main() {
       return;
     }
 
-    coconso.log("未等到目标Activity", ac);
+    console.log("未等到目标Activity", ac);
     sleep(200);
   }
 }
@@ -329,7 +332,7 @@ function browserCommentMain() {
           // currentEntry = entryBtn.text();
 
           entryBtn.click();
-          sleep(2000);
+          sleep(5000);
 
           msg = likeMain()
           //let msg = "还在探路中喵";
@@ -366,10 +369,8 @@ function browserCommentMain() {
 // 点赞主函数
 function likeMain() {
   resetState();
-  let nickName = idEndsWith("nickNameTextView").findOnce();
-  if (nickName) {
-    state.user = nickName.text();
-  }
+
+  
 
   let isEmptyList = checkEmpty()
   if(isEmptyList){
@@ -380,7 +381,10 @@ function likeMain() {
   var doneKeys = new Set(); // 记录已完成的帖子的hash
   for (let li = 2; li > 0; ) {
     //if(!isTargetApp()) continue;
-
+    let nickName = idEndsWith("nickNameTextView").findOnce();
+    if (nickName) {
+      state.user = nickName.text();
+    }
     var somePostItems = getPostItems();
     state.item_count = somePostItems.length;
     var someKeys = "\n";
