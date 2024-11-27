@@ -129,17 +129,18 @@ function checkEnd() {
   }
 
   emptyList = idEndsWith("mCommonPageStatusViewTvEmpty").findOnce();
+  //id("mCommonPageStatusViewIvImage").findOnce();
   if (emptyList != null) {
-    state.bye = "看不到你的帖子喵"; //emptyList.text()
+    state.bye = "看不到你的帖子喵\t"; //emptyList.text()
     return true;
   }
 
   if (
     className("android.widget.TextView")
-      .text("由于用户隐私设置，无法查看")
+      .text("由于用户隐私设置，无法查看\t")
       .exists()
   ) {
-    state.bye = "你设置了隐私我怎么给你点赞呀";
+    state.bye = "你都把门关上了，我进不来喵\t";
     return true;
   }
 
@@ -162,11 +163,11 @@ function checkEnd() {
   if (retryLimit) {
     if (lt5 < state.rep) {
       // 重试次数低 且 不够重复点赞数
-      state.bye = "网络不稳定";
+      state.bye = "网络似乎不太稳定喵\t";
     } else if (lt5 >= state.rep) {
-      state.bye = "似乎大部分都赞过了";
+      state.bye = "似乎大部分都赞过了喵\t";
     } else {
-      state.bye = "在点赞的路上遇到深渊侵蚀";
+      state.bye = "在点赞的路上遇到深渊侵蚀喵喵喵\t";
     }
 
     //state.bye = 'limit'
@@ -174,6 +175,24 @@ function checkEnd() {
   }
 
   return false;
+}
+
+function checkEmpty() {
+  emptyList = idEndsWith("mCommonPageStatusViewTvEmpty").findOnce();
+  //id("mCommonPageStatusViewIvImage").findOnce();
+  if (emptyList != null) {
+    state.bye = "看不到你的帖子喵\t"; //emptyList.text()
+    return state.bye
+  }
+
+  if (
+    className("android.widget.TextView")
+      .text("由于用户隐私设置，无法查看")
+      .exists()
+  ) {
+    state.bye = "你把门关上了，我进不来喵\t";
+    return state.bye;
+  }
 }
 
 function afterEndLike(posts) {
@@ -325,7 +344,7 @@ function browserCommentMain() {
         }
       } else if (currentKey == key) {
         // 点完赞后返回的主贴界面
-        reply(frame, msg);
+        reply(frame, msg.replace(/\t.*/,''));
         sleep(10000);
         currentKey = ""
       }
@@ -350,6 +369,11 @@ function likeMain() {
   let nickName = idEndsWith("nickNameTextView").findOnce();
   if (nickName) {
     state.user = nickName.text();
+  }
+
+  let isEmptyList = checkEmpty()
+  if(isEmptyList){
+    return isEmptyList
   }
 
   var posts = []; // 记录帖子列表
