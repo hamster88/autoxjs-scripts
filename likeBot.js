@@ -168,7 +168,6 @@ function checkEnd() {
       state.bye = "网络似乎不太稳定喵\t";
     } else if (lt5 >= state.rep) {
       state.bye = "似乎大部分都赞过了喵\t";
-      return false; // 临时关闭
     } else {
       state.bye = "在点赞的路上遇到深渊侵蚀喵喵喵\t";
     }
@@ -374,6 +373,7 @@ function likeMain() {
 
   let isEmptyList = checkEmpty()
   if(isEmptyList){
+    sleep(9000)
     return isEmptyList
   }
 
