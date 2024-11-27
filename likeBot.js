@@ -123,7 +123,7 @@ function checkEnd() {
   //id("nickNameTextView")
   theEnd = idEndsWith("endImage").findOnce();
   if (theEnd != null) {
-    state.bye = "点赞结束喽";
+    state.bye = "点赞结束了喵";
     return true;
   }
 
@@ -288,7 +288,7 @@ function browserCommentMain() {
       console.log(JSON.stringify(key));
       if (!key.match(/\t祈羽夜鸢/)) {
 
-        reply(frame,'准备开始了哟～')
+        reply(frame,'要开始了喵～')
 
         let entryBtn = null
         while(!entryBtn){
@@ -297,11 +297,11 @@ function browserCommentMain() {
         entryBtn.click()
         sleep(2000)
 
-        let msg = likeMain()
-
+        //let msg = likeMain()
+        let msg = '正在探路喵'
         idEndsWith("backButton").findOne().click()
         sleep(2000)
-
+        
         reply(frame, msg)
         sleep(2000)
         
@@ -341,7 +341,7 @@ function likeMain() {
     var somePostItems = getPostItems();
     state.item_count = somePostItems.length;
     var someKeys = "\n";
-    var someLikeBtns = [];
+    var someLikeBtns = []; // 弃用
     for (let i of somePostItems) {
       let texts = [];
       let layouts = i.find(className("android.widget.LinearLayout"));
@@ -362,7 +362,6 @@ function likeMain() {
       if (!doneKeys.has(key)) {
         // 开始对新检索到的帖子点赞
 
-        someLikeBtns.push(likeBtn);
         doLike(likeBtn);
         posts.push(texts);
         doneKeys.add(key);
@@ -452,7 +451,7 @@ function truncateString(str, length) {
 try {
   main();
 } catch (e) {
-  state.bye = "出错了";
+  state.bye = "出错了喵";
   //afterEndLike()
   toast(e + "");
   console.error(e);
